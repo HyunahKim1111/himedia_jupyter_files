@@ -1,0 +1,112 @@
+판다스 사용법
+
+** 불러오기
+data = pd.read_csv("https://raw.githubusercontent.com/haram4th/ablearn/main/Taitanic_train.csv")
+
+pd.DataFrame({key : value, key : value})
+
+데이터 프레임에는 키벨류인 딕셔너리 형태로 들어가있음.
+변수에 저장 후 벨류값을 보기 위해서는 key를 []중괄호를 이용해서 불러오기.
+
+1. 데이터 프레임에서 조건에 맞는 행만 가져오기
+
+data[data['범죄율'] < 0.05]
+
+2. 원하는 문자열을 포함한 데이터를 찾고 싶을 때
+# .str.contains("찾을 문자열")
+data2[data2['Name'].str.contains("Miss")]  
+
+3. iloc & loc
+
+ iloc
+인덱싱/슬라이싱을 사용해서 원하는 행과 컬럼만 가져오기 
+데이터프레임.iloc[행시작번호:행끝번호, 열시작번호:열끝번호]
+
+data2.iloc[4:10, 3:7]
+
+loc
+원하는 조건의 행을 가져오고싶을 때 사용.
+
+data2.loc[data2['Pclass']==1]
+
+data2.loc[data2['Pclass'] == 3]['Fare'].mean()
+
+data2.loc[(data2['Pclass'] == 3) & (data2['Fare'] > 13.67)]
+
+data2.loc[data2['Pclass']==3]['Fare'].median()
+
+data2['adj_fare'] = data2['Fare'] / data2['Family']
+
+4. 컬럼 이름 바꾸기
+
+.rename(columns={"이전이름" : "새이름","이전이름2" : "새이름2"} => 바꾸고 싶은 컬럼 이름만 변경 가능
+데이터프레임.columns = [전체 새 컬럼이름]
+
+data2.rename(columns={"PassengerId":"승객ID", "Survived" : "생존여부"})
+
+5. 필요한 컬럼만 추출하기 [[]]
+station_info = station_info[['station.code', 'line.name_sub', 'geo.latitude', 'geo.longitude']]
+
+5. 그룹 집합 연산 groupby
+
+data2[["Sex", "Age"]].groupby("Sex").mean()
+
+data2.groupby(["Sex", "Pclass"])["Fare"].mean()
+
+#groupby를 통해서 독립변수와 종속변수의 관계 파악
+data.groupby(['Pclass'])['Survived'].value_counts(sort=False)
+=> Pclass별로 Survived한 사람들의 관계를 파악해보자
+
+*plot 그래프로도 볼 수 있어!
+data.groupby(['Pclass'])['Survived'].value_counts(sort=False).plot(kind='bar')
+
+
+6. apply
+
+data2['Sex'] = data2['Sex'].apply(int)
+
+7.  replace 특정 값을 찾아 다른 값으로 바꾸기 
+
+data2['Sex'] = data2['Sex'].replace({"male": "1", "female" : "0"})
+
+8. columns
+data2.columns
+
+9. 열 내부에 있는 유일 항목 갯수, 유일값 계산
+
+범주형 데이터 일 때, 각 범주별 데이터의 빈도를 셀 때 사용
+.unique() : 유일값을 갖는 데이터를 추출
+.nunique(): 유일값이 몇 개인지 세어줌
+.value_counts(): 유일값의 빈도를 계산
+
+data['Age'].value_counts() # 최빈값을 구하고 싶으면 value_counts
+
+10. 데이터 프레임 합치기
+
+data5 = pd.concat([data3, data2], axis=1)
+pd.merge(data2,data3, how="inner", on="PassengerId")
+data3.join(data2, how="inner", on="PassengerId")
+
+** 
+
+11. 문자형 다루기
+# 컬럼의 데이터를 모두 소문자로 변경
+data2['Name'].str.lower()
+
+# ,를 기준으로 문자열을 분리해 리스트로 만들기
+data2['Name'] = data2['Name'].str.split(",")
+
+# 리스트의 자료들을 합쳐서 문자로 만들기
+data2['Name'] = data2['Name'].str.join(", ")
+
+# ,를 기준으로 문자열 분리해 리스트로 만들고 첫번째 자료를 가져옴
+data2['Name'].str.split(",").str.get(0)
+
+# 특정 단어/문자가 포함된 행 찾기 및 가져오기
+data2[data2["Name"].str.contains("John")]
+
+# 이름의 길이가 가장 긴 곳을 찾아서 인덱스 반환하기 idxmax()
+data2['Name'].str.len().idxmax()
+
+data2['Name'].str.len().max()
+
