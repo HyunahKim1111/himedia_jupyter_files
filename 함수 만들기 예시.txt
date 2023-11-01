@@ -1,0 +1,75 @@
+함수 만들기 예시 
+
+def black(x):
+    if 'Black' in x:
+        return 'Black'
+    else:
+        return x
+
+----------------------------------------
+def plus_ten(x):
+  return x + 10
+
+plus_ten(5)
+----------------------------------------
+minus_five = lambda x: x -5
+minus_five(10)
+5
+----------------------------------------
+
+def age_dist(age):
+    if 10 <= age < 20:
+        return '10s'
+    elif 20 <= age < 30:
+        return '20s'
+    elif 30 <= age < 40:
+        return '30s'
+    elif 40 <= age < 50:
+        return '40s'
+    elif 50 <= age < 60:
+        return '50s'
+    elif 60 <= age < 70:
+        return '60s'
+    elif 70 <= age < 80:
+        return '70s'
+    elif 80 <= age < 90:
+        return '80s'
+    elif 90 <= age < 100:
+        return '90s'
+
+data['age'] = data['age'].apply(age_dist)
+
+-----------------------------------------------------------------------------------
+
+def c_ratio(x):
+    for idx, item in zip(x.index, x):
+        if idx[1] == '<=50K':
+            under_50 = item
+        else:
+            upper_50 = item
+            class_ratio = upper_50/(upper_50+under_50) * 100
+            print(idx, f'{class_ratio:.2f}%')
+
+---------------------------------------------------------------------------------
+
+def work_hour(x):
+    if x > 52.5:
+        return 'work_more'
+    elif x < 32.5:
+        return 'work_less'
+    else:
+        return 'work_normal'
+
+data['hours-per-week'] = data['hours-per-week'].apply(work_hour)
+
+----------------------------------------------------------------------------------------
+
+# 아웃라이어를 계산하는 함수
+def outlier(x):
+    x = x.describe()
+    out_max = x.loc['75%'] + (1.5 * (x.loc['75%'] - x.loc['25%']))
+    out_min = x.loc['25%'] - (1.5 * (x.loc['75%'] - x.loc['25%']))
+    ol_result = pd.DataFrame([out_max, out_min], columns=out_max.index, index=['상한값', '하한값'])
+    result = pd.concat([x, ol_result])
+    return result
+

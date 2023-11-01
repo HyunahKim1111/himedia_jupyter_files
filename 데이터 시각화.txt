@@ -1,0 +1,17 @@
+데이터 시각화
+
+1. boxplot
+data['age'].value_counts(sort=False).plot(kind='bar')
+
+mem['recency'].plot(kind='box')
+
+2.
+fig, axs = plt.subplots(figsize=(16,16), ncols=5, nrows=5)
+for i, feature in enumerate(data):
+    row = int(i/5)
+    col = i%5
+    sns.boxplot(x=data[feature], ax=axs[row][col])
+
+3. 상관분석 히트맵
+plt.figure(figsize=(15,15))
+sns.heatmap(data.corr(method='spearman'), annot=True, linecolor="white", linewidths=1)
