@@ -1,0 +1,80 @@
+데이터분석수업내용03_군집분석_비지도학습
+
+1. 계층적 군집 분석
+
+비지도 학습
+데이터가 적을 경우 사용
+거리 계산 지표
+단일연결법(최소연결법)
+완전연결법(최장연결법)
+평균연결법
+중심연결법
+와드연결법
+덴드로그램으로 계층적 군집 시각화
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. 비계층적 군집 분석
+
+K-Means(K평균)을 사용한 군집 분석
+
+from sklearn.cluster import KMeans
+
+km = KMeans(n_clusters = 3)
+km.fit(X)
+result = km.labels_
+
+#결과보기
+data['label'] = result
+data.head()
+
+#정확도 확인하기
+from sklearn.metrics import accuracy_score
+print(accuracy_score(data['이탈여부_Yes'], data['label']))
+
+#k-means의 k값을 얻기 위해 엘보우 메소드 사용하기
+distance = []
+for i in range(1,21):
+    km=KMeans(n_clusters = i)
+    km.fit(X)
+    distance.append(km.inertia_)
+
+plt.figure(figsize=(20,10))
+sns.lineplot(x = range(1,21), y =distance, marker='o', markersize=10, markerfacecolor='red')
+
+3. DBSCAN (Density Based Spatial Clustering of Applications with Noise)
+밀도 기반 군집화의 대표적인 알고리즘
+데이터의 분포가 기하학적으로 복잡한 데이터 세트에도 효과적인 군집화 가능
+
+DBSCAN의 중요한 두 가지 파라미터
+입실론주변 영역(epsilon): 개별 데이터를 중심으로 입실론 반경을 가지는 원형의 영역
+최소 데이터 갯수(min points): 개별 데이터의 입실론 주변 영역에 포함되는 타 데이터의 갯수
+
+from sklearn.cluster import DBSCAN
+
+model = DBSCAN(eps=0.5, min_samples=5)
+result = model.fit_predict(df_scaled)
+df_scaled['cluster'] = result
+df_scaled.head()
+
+#산점도로 군집한 데이터 시각화
+
+f, ax = plt.subplots(2,2)
+f.set_size_inches((12,12))
+
+for i in range(4):
+    eps = 0.4 * (i+1)
+    min_samples = 12
+    
+    model = DBSCAN(eps=eps, min_samples=min_samples)
+    model.fit(df_scaled)
+    df_scaled['cluster'] = model.fit_predict(df_scaled)
+    
+    for j in range(-1, df_scaled['cluster'].max() +1):
+        ax[i // 2, i % 2].scatter(df_scaled.loc[df_scaled['cluster']== j, 'Annual Income (k$)'], df_scaled.loc[df_scaled['cluster']== j, 'Spending Score (1-100)'],
+                                 label = 'cluster' + str(j))
+        ax[ i //2, i %2].legend()
+        ax[ i //2, i %2].set_title(f'eps={eps:.1f}, min_samples{min_samples}', size=15)
+        ax[ i //2, i %2].set_xlabel('Annual Income', size=12)
+        ax[ i //2, i %2].set_ylabel('Spending Score', size=12)
+plt.show()  

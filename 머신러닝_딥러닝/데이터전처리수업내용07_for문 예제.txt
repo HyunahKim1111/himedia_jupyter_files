@@ -1,0 +1,9 @@
+# 폴더에 있는 여러개의 csv파일을 하나의 데이터프레임에 담기
+data_hap = pd.DataFrame()
+for idx, i in enumerate(file_list[:-8]):
+    print(idx, end="\r") # 작업이 얼마나 되고있는지 눈으로 보고 싶으면 enumerate idx를 사용하면 돼!
+    data = pd.read_csv(f'C:/bigdata/data/전국부동산실거래가/{i}', skiprows=15, encoding='cp949')
+    data_hap = pd.concat([data_hap,data])
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+

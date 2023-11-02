@@ -1,0 +1,117 @@
+데이터분석수업내용02_회귀분석
+
+# 회귀분석을 해보자!
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from math import sqrt
+
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+pred = lr.predict(X_test)
+print('coef: ', lr.coef_)
+print('intercept: ', lr.intercept_)
+print('mse: ', mean_squared_error(y_test, pred))
+print('rmse: ', sqrt(mean_squared_error(y_test, pred)))
+print('R-squared: ', r2_score(y_test, pred)) 
+
+**pred = lr.predict(X_valid) --> valid를 만들었으면 pred에 valid를 넣어야 해.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+# 의사결정나무 회귀분석을 해보자!
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+dtr = DecisionTreeRegressor()
+dtr.fit(X_train, y_train)
+pred = dtr.predict(X_valid)
+print(mean_squared_error(y_valid, pred))
+print(r2_score(y_valid, pred))
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+3. 릿지 회귀분석(Ridge Regression)
+L2규제, w(가중치)의 절대값을 가능한 한 작게 만들어 0에 가깝게 만든다.
+모든 특성(Feature, 독립변수)이 주는 영향력을 최소화
+
+from sklearn.linear_model import Ridge
+
+ridge = Ridge()
+ridge.fit(X_train, y_train)
+pred2 = ridge.predict(X_valid)
+print('coef: ', ridge.coef_)
+print('intercept: ', ridge.intercept_)
+print('mse: ', mean_squared_error(y_test, pred2))
+print('rmse: ', sqrt(mean_squared_error(y_test, pred2)))
+print('R-squared: ', r2_score(y_test, pred2)) 
+
+#확인하기
+for alpha in [0, 0.1, 1, 10, 100]:
+    ridge = Ridge(alpha=alpha)
+    ridge.fit(X_train, y_train)
+    pred2 = ridge.predict(X_valid)
+    print("alpha: ", alpha)
+    print("-"*50)
+    print('coef: ', ridge.coef_)
+    print('intercept: ', ridge.intercept_)
+    print('mse: ', mean_squared_error(y_test, pred2))
+    print('rmse: ', sqrt(mean_squared_error(y_test, pred2)))
+    print('R-squared: ', r2_score(y_test, pred2))  
+    print(alpha, f"훈련 세트 점수: {ridge.score(X_train, y_train)} ")
+    print(alpha, f"테스트 세트 점수: {ridge.score(X_test, y_test)} ")
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+4. Lasso(라쏘, L1규제)
+w(가중치)의 절대값에 패널티를 부여해서 0으로 만들고 제거
+특성(feature, 독립변수)이 너무 많을 때 유용
+
+from sklearn.linear_model import Lasso
+
+lasso = Lasso()
+lasso.fit(X_train, y_train)
+pred2 = lasso.predict(X_test)
+print('coef: ', lasso.coef_)
+print('intercept: ', lasso.intercept_)
+print('mse: ', mean_squared_error(y_test, pred2))
+print('rmse: ', sqrt(mean_squared_error(y_test, pred2)))
+print('R-squared: ', r2_score(y_test, pred2))  
+print(alpha, f"훈련 세트 점수: {lasso.score(X_train, y_train)} ")
+print(alpha, f"테스트 세트 점수: {lasso.score(X_test, y_test)} ")
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+5. ElasticNet(엘라스틱넷 회귀분석)
+
+from sklearn.linear_model import ElasticNet
+
+el_net = ElasticNet()
+el_net.fit(X_train, y_train)
+pred2 = el_net.predict(X_test)
+print('coef: ', el_net.coef_)
+print('intercept: ', el_net.intercept_)
+print('mse: ', mean_squared_error(y_test, pred2))
+print('rmse: ', sqrt(mean_squared_error(y_test, pred2)))
+print('R-squared: ', r2_score(y_test, pred2))  
+print(alpha, f"훈련 세트 점수: {el_net.score(X_train, y_train)} ")
+print(alpha, f"테스트 세트 점수: {el_net.score(X_test, y_test)} ")
+
+6. PCA로 차원축소 (이후 로스지틱 회귀분석 실시하기까지)
+n_components=0.80 전체의 80% 설명 가능한 변수까지 선택
+n_components=None 모든 주성분의 분산비율 확인 가능
+
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=0.80)
+X_pca = pca.fit_transform(X_scaled)
+pca.n_components_
+** pca = PCA(n_components=None)모든 주성분을 넣고싶으면
+
+#pca한 후 홀드아웃
+X_train2, X_test2, y_train2, y_test2 = train_test_split(X_pca, y, test_size=0.3, random_state=10)
+
+#로지스틱 회귀분석 돌려보기
+lr2 = LogisticRegression()
+lr2.fit(X_train2, y_train2)
+pred2 = lr2.predict(X_test2)
+print(accuracy_score(y_test2, pred2))
+print(confusion_matrix(y_test2, pred2))
+print(classification_report(y_test2, pred2))

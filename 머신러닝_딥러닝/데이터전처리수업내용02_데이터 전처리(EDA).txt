@@ -1,0 +1,326 @@
+01. 데이터 전처리(EDA)
+     데이터 전처리(Data Processing)
+
+1) 데이터 전처리란?
+분석할 데이터 원본을 머신러닝 및 딥러닝을 할 수 있도록 준비하는 과정
+데이터 타입 변환(문자/숫자)
+결측값 처리 - 삭제/대치
+이상값 탐지 - 표준편차 3% 이하 97% 이상 되는 값들, 4분위수 25% - IQR1.5미만이거나 75% + IQR1.5초과인 값
+구간화
+정규화/표준화(스케일링)
+카테고리 변수(범주형) 레이블 인코딩(더미변수화, 원핫인코딩)
+종속변수의 클래스 편향 수정(클래스 불균형 문제 해결)
+EDA를 통한 특성 생성 및 삭제
+
+- 변수가 무슨 타입이냐? 독립변수는 수치형이니 명목형이니 종속변수는 수치형이니 명목형이니
+
+컬럼 보기
+ - data.columns
+
+전체 컬럼을 보게 하기.
+ -  pd.set_option("display.max_columns",None) # 변수가 많을 때 모든 변수를 볼 수 있게 하는 코드.
+
+** 컬럼이 너무 많을 때 몇몇 컬럼만 뽑아서 쓸 경우 이렇게 한다.
+data = data[['id', 'title', 'genres', 'vote_average', 'popularity', 'keywords', 'overview']]
+
+** sort_values(내림차순으로 확인하기)
+data[data['거래금액(만원)'] > 1.265000e+05].sort_values(by='거래금액(만원)', ascending=False)
+
+** #인덱스 정리
+base_rate = base_rate.reset_index(drop=True)
+
+---------------------------------------------------------------------------------------------------------------------
+** 데이터를 html로 저장해서 EDA를 편하게 볼 수 있는 툴!
+
+from ydata_profiling import ProfileReport
+profile = ProfileReport(data, title="Profile Report")
+profile.to_file("student_mat.html")
+
+
+---------------------------------------------------------------------------------------------------------------------------
+
+1. 데이터 타입 맞추기
+astype(int, float, str)
+
+data1['serv_ratio_by_age'] = data1['serv_ratio_by_age'].astype(int) 
+
+#만약 금액에 ,가 있어서 int로 바꾸지 못하면 ,를 제외하고 바꿔야 한다.
+data['거래금액(만원)'] = data['거래금액(만원)'].str.replace(',', '').astype(int)
+
+
+1. drop
+dropna(), fillna(), isna().sum()
+drop('컬럼명', axis=1)
+X2 = data2.drop('Survived', axis=1 # axis=1 옆으로 찾아라)
+data.drop('N_Sex', axis=1 # axis=1 옆으로 찾아라)
+
+---------------------------------------------------------------------------------------
+
+2. 결측값 확인 및 처리
+
+data.isna().sum() # 결측값이 있는 행을 볼 수 있다.
+data.dropna() # 할당은 안 됨. 너무 많은 삭제가 있어서 많이 쓰지는 않는다.
+
+# na가 있는 행만 보기
+data[data['workclass'].isna() == True] 
+
+  1) 평균 대치법 : 컬럼에 있는 데이터 값의 평균으로 결측값을 대치한다.
+
+**fillna(대치값)
+data['Age'].mean() # 평균값을 찾아서
+data['Age'].fillna(data['Age'].mean()) # 평균값으로 결측값을 대치
+data['Age'].fillna(24) # 값을 그냥 넣어서 대치할 수도 있어.
+
+  2) Scikit-learn의 SimpleImputer로 평균, 중앙, 최빈값으로 대치하기
+
+from sklearn.impute import SimpleImputer
+
+data[data['Age'].isna() == True] # 결측값이 있는 애들만 가져올 수 있어.
+data[data['Age'].isna() == True].index # 결측값이 있는 행의 인덱스를 뽑을 수 있어.
+na_indices = data[data['Age'].isna() == True].index
+
+*mean
+imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp_mean.fit_transform(data['Age'].values.reshape(-1,1))[:,0]
+data.iloc[na_indices] # 결측값으로 묶어놨던 애들에게 평균값으로 부여해주기.
+
+* median
+imp_median = SimpleImputer(missing_values=np.nan, strategy='median')
+imp_median.fit_transform(data['Age'].values.reshape(-1,1))[:,0]
+
+*most_frequent
+imp_most_frequent = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+imp_most_frequent.fit_transform(data['Age'].values.reshape(-1,1))[:,0]
+
+  3) K-최근접이웃(KNN)을 활용해서 결측값 대치
+
+from sklearn.impute import KNNImputer
+KNN_imputer = KNNImputer(n_neighbors=1) #n_neighbors=1 기본은 5개야.
+data['Age'] = KNN_imputer.fit_transform(data['Age'].values.reshape(-1,1))[:,0]
+data.iloc[na_indices]
+
+컬럼 삭제하기
+데이터프레임.drop('컬럼명', axis=1)
+행 삭제하기
+데이터프레임.drop(인덱스)
+inplace=True (재할당 없이 바로 반영)
+
+data.drop('Cabin', axis=1, inplace=True) # 재할당을 하거나 inplace=True로 데이터를 저장할 수 있음.
+
+--------------------------------------------------------------------------------------
+
+3. 이상값 탐지 및 처리
+
+data.plot(kind='box') # 박스플랏 위 아래에 찍긴 동그라미들이 이상값이다.
+data['Fare'].plot(kind='box') # 행 하나만 박스플랏으로 보기.
+
+# IQR
+out_max = x.loc['75%'] + (1.5*(x.loc['75%']-x.loc['25%']))
+out_min = x.loc['25%'] - (1.5*(x.loc['75%']-x.loc['25%']))
+
+# 아웃라이어를 계산하는 함수. 우리가 만들어야 해.
+def outlier(x):
+    x = x.describe()
+    out_max = x.loc['75%'] + (1.5*(x.loc['75%']-x.loc['25%']))
+    out_min = x.loc['25%'] - (1.5*(x.loc['75%']-x.loc['25%']))
+    ol_result = pd.DataFrame([out_max, out_min], columns=out_max.index, index=['상한값','하한값'])
+    result=pd.concat([x, ol_result])
+    return result
+
+-----------------------------------------------------------------------------------
+
+4.Feature Enginnering, Feature Selection
+  1) 파생변수 만들기
+  2) 변수선택
+data['family'] = data['SibSp'] + data['Parch'] # 새로운 변수 만들때는 데이터프레임.['']
+  3) 더미변수 만들기
+pd.get_dummies(data, columns=['Sex','Age','Embarked'], drop_first=True) 
+
+-------------------------------------------------------------------------------------
+
+5. 더미변수화(onehot encoding)
+범주형 변수들(오류나니까)을 숫자로 변환 (True/False)
+카테고리 이름을 맞춰서 컬럼 만들기. True/False로 만들어서 컴퓨터가 숫자로 읽으라고.
+
+data = pd.get_dummies(data, drop_first=True)
+data1 = pd.get_dummies(data1, columns=['Sex', 'Age', 'Embarked'], drop_first=True)
+
+-----------------------------------------------------------------------------------
+
+6. 데이터를 훈련데이터/테스트 데이터로 나누기
+
+from sklearn.model_selection import train_test_split
+X1 = data1.drop('Survived', axis=1)
+y1 = data1['Survived']
+X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, random_state=10)
+
+7. 정규화(스케일링) : 단위차이를 맞춰줌
+독립변수간 단위 차이가 많이 나니까 정규화를 해줄 필요가 있구나. 스케일링이 필요.
+
+* 1) StandardScaler(기본 스케일러, 평균과 표준편차를 사용함.):
+평균을 제거하고 데이터를 단위 분산으로 조정함. 그러나 이상치가 있다면 평균과 표준편차에 영향을 미쳐 변환된 데이터의 확산은 매우 달라지게 된다. 
+따라서 **이상치가 있는 경우 균형잡힌 척도를 보장할 수 없다는 단점이 있다.**
+scale2 = StandardScaler()
+X_std_scaled = scale2.fit_transform(X)
+X_std_scaled = pd.DataFrame(X_std_scaled, columns=X.columns)
+X_std_scaled.head()
+
+
+* 2) MinMaxScaler(최대/최소값이 각각 1,0이 되도록 스케일링): 
+모든 Feature(독립변수)값이 0~1사이에 있도록 데이터를 재조정한다.
+ 다만, 이상치가 있는 경우 변환된 값이 매우 좁은 범위로 압축될 수 있다. 
+즉, MinMaxScaler역시 **이상치에 매우 민감**하다.
+scale = MinMaxScaler()
+X_mx_scaled = scale.fit_transform(X)
+X_mx_scaled = pd.DataFrame(X_mx_scaled, columns=X.columns)
+X_mx_scaled.head()
+
+
+* 3) MaxAbsScaler(최대 절대값과 0이 각각 1과 0이 되도록 스케일링): 
+절대값이 0-1사이에 매핑되도록 한다. -1~1 사이로 재조정한다. 
+양수 데이터로만 구성된 특징 데이터셋에서는 MinMax 스케일러와 매우 유사하게 동작하며, **큰 이상지에 민감할 수 있다.**
+
+* 4) RobustScaler(중앙값(median)과 IQR(4분위수) 사용, 아웃라이어의 영향을 최소화): 
+아웃라이어의 영향을 최소화한 기법이다. 중앙값(median)과 IQR(사분위수)를 사용하기때문에 StandardScaler와 비교해보면 표준화 후 동일한 값을 더 넓게 분포시키고 있음을 확인할 수 있다.
+from sklearn.preprocessing import RobustScaler
+scaler = RobustScaler()
+X_scaled = scaler.fit_transform(X)
+X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
+
+
+
+
+
+** # minmax 스케일링 한 데이터셋
+X_train, X_test, y_train, y_test = train_test_split(X_mx_scaled, y, test_size= 0.4, random_state = 10)
+X_valid, X_test, y_valid, y_test = train_test_split(X_test, y_test, test_size= 0.5, random_state = 10)
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+7. Lable Encoding(문자열을 숫자로 바꾸자!)
+
+from sklearn.preprocessing import LabelEncoder
+
+# 주소를 숫자로 변경 
+le = LabelEncoder()
+data['시군구'] = le.fit_transform(data['시군구'])
+print(le.classes_)
+
+8. 컬럼 안에 내용 나누기
+data2 = data['시군구'].str.split(expand=True, n=2)
+
+9. 람다함수 사용법
+data['target'] = data['rating'].apply(lambda x: 1 if x >=8 else 0)
+
+10. 금액에 있는 , 표시 str사용해서 빼기
+df['거래금액'] = df['거래금액'].str.replace(',', '').astype(int) # str을 쓰면 반복문을 쓰는거랑 비슷한 용도!
+
+11. # 변경일자에 앞 두자리 숫자만 추출하기.
+base_rate['변경일자'] = base_rate['변경일자'].str[:2]
+
+12. # 파생변수 만들기 --> df['합친 열'] = df['열1'] + df['열2']
+base_rate['기준금리년월'] = base_rate['변경연도'].astype(str) + base_rate['변경일자'].astype(str)
+
+13. sort_values / ascending=False --> 내림차순으로 확인하기
+data[data['거래금액(만원)'] > 1.265000e+05].sort_values(by='거래금액(만원)', ascending=False) 
+
+data['계약년월'].value_counts(ascending=False)
+
+14 . 하나의 행만 빼기
+base_rate = base_rate.drop(34) # 34번 인덱스를 빼버림. axis=1 안 하면 해당 행이 빠지는 것임.
+
+15. 상관관계 확인하기 및 히트맵 그리기
+data.corr()
+plt.figure(figsize=(15,15))
+sns.heatmap(data.corr(), annot=True, linecolor='white', linewidth=1)
+
+16. 하이퍼 파라미터 튜닝
+
+1) 그리드서치
+manual Search에 비해, Grid Search는 체계적인 방식으로 하이퍼파라미터 최적화를 수행
+Grid Search는 모든 parameter의 경우의 수에 대해 Cross-validation 결과가 가장 좋은 parameter를 고르는 방법
+전체 탐색 대상 구간, 간격은 분석가의 지정이 필요하나 균등하고 전역적인 탐색이 가능하다는 장점이 있음.
+단, 하이퍼파라미터의 갯수가 많아질수록 전체 탐색 시간이 기하급수적으로 증가
+
+from sklearn.model_selection import GridSearchCV
+
+params = dict(max_depth=[3,5,10], n_estimators=[100, 500, 1000], learning_rate=[0.01, 0.05, 0.1])
+
+grid_cv = GridSearchCV(xgb_mx, param_grid=params, cv=5, n_jobs=-1, verbose=3)
+grid_cv.fit(X_train, y_train)
+pred = grid_cv.predict(X_valid)
+print(sorted(grid_cv.cv_results_.keys()))
+print('최적 하이퍼 파라미터: ', grid_cv.best_params_)
+print(f'최고 예측 정확도: {grid_cv.best_score_ :.4f}')
+
+2) 랜덤서치
+GridSearch가 전수조사라면 RandomSearch는 표본조사
+하이퍼파라미터 값을 랜덤 샘플링해 선정
+RandomSearch는 GridSearch에 비해 불필요한 반복 수행 횟수를 대폭줄이면서, 동시에 정해진 간격 사이에 위치한 값들에 대해서도 확률적으로 탐색이 가능
+최적 하이퍼파라미터를 더 빨리 찾을 수 있다.
+
+from sklearn.model_selection import RandomizedSearchCV
+
+rand_cv = RandomizedSearchCV(xgb_mx, param_distributions=params, n_iter=27, cv=5, n_jobs=-1, verbose=3)
+rand_cv.fit(X_train, y_train)
+pred = rand_cv.predict(X_valid)
+print(sorted(rand_cv.cv_results_.keys()))
+print('최적 하이퍼 파라미터: ', rand_cv.best_params_)
+print(f'최고 예측 정확도: {rand_cv.best_score_ :.4f}')
+
+17. 데이터증폭 
+
+from imblearn.over_sampling import SMOTE
+sm = SMOTE(random_state=42)
+X_res, y_res = sm.fit_resample(X_train, y_train)
+
+X_train_smt, X_test_smt, y_train_smt, y_test_smt = train_test_split(X_res, y_res, test_size=0.4, random_state=10)
+
+#SMOTE 후에 하이퍼 파라미터 구하기
+rand_cv = RandomizedSearchCV(xgb_mx, param_distributions=params, n_iter=27, cv=5, n_jobs=-1, verbose=3)
+rand_cv.fit(X_train_smt, y_train_smt)
+pred = rand_cv.predict(X_test_smt)
+print(sorted(rand_cv.cv_results_.keys()))
+print('최적 하이퍼 파라미터: ', rand_cv.best_params_)
+print(f'최고 예측 정확도: {rand_cv.best_score_ :.4f}')
+
+#다시 모델에 돌려보기
+xgb_mx = XGBClassifier(max_depth = 10, n_estimators= 500, n_jobs=-1, learning_rate=0.1, random_state=10)
+xgb_mx.fit(X_train_smt, y_train_smt)
+pred_xgb_mx_smt = xgb_mx.predict(X_test_smt)
+print(accuracy_score(y_test_smt, pred_xgb_mx_smt))
+print(classification_report(y_test_smt, pred_xgb_mx_smt))
+
+# SMOTE한거랑 안한거랑 비교해보기
+pred_xgb_mx_smt_test = xgb_mx.predict(X_test)
+print(accuracy_score(y_test, pred_xgb_mx_smt_test))
+print(classification_report(y_test, pred_xgb_mx_smt_test))
+
+18. 데이터 축소
+
+from imblearn.under_sampling import ClusterCentroids
+from sklearn.cluster import MiniBatchKMeans
+
+cc = ClusterCentroids(
+    estimator=MiniBatchKMeans(n_init=1, random_state=0), random_state=42
+)
+X_res2, y_res2 = cc.fit_resample(X_train, y_train)
+
+# 랜덤서치고 하이퍼파라미터 튜닝하고
+rand_cv = RandomizedSearchCV(xgb_mx, param_distributions=params, n_iter=27, cv=5, n_jobs=-1, verbose=3)
+rand_cv.fit(X_res2, y_res2)
+pred = rand_cv.predict(X_valid)
+print(sorted(rand_cv.cv_results_.keys()))
+print('최적 하이퍼 파라미터: ', rand_cv.best_params_)
+print(f'최고 예측 정확도: {rand_cv.best_score_ :.4f}')
+
+# 다시 돌려보기
+xgb_mx = XGBClassifier(max_depth = 3, n_estimators= 1000, n_jobs=-1, learning_rate=0.1, random_state=10)
+xgb_mx.fit(X_res2, y_res2)
+pred_xgb_mx_smt = xgb_mx.predict(X_test)
+print(accuracy_score(y_test, pred_xgb_mx_smt))
+print(classification_report(y_test, pred_xgb_mx_smt))
+
+19. 서열이 있는 변수라면 높은 숫자가 서열이 높은거야!
+# Pclass의 1이 서열이 가장 높으므로 1에 높은 숫자 부여 1 -> 3, 3 -> 1 
+data2['Pclass'] = data2['Pclass'].replace({1:3, 3:1})  
