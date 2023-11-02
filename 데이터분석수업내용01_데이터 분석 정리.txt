@@ -1,5 +1,13 @@
 데이터 분석 정리
 
+[홀드아웃]
+# train, valid, test 데이터 분할
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=7)
+X_valid, X_test, y_valid, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=7)
+
+----------------------------------------------------------------------------------------------------------------------------
+
 앙상블 분석
 
 예측력을 높이기 위해서 여러 번의 데이터 분할을 통해 구축된 다수의 모형을 결합해서 새로운 모형을 만드는 방법
@@ -163,4 +171,3 @@ print(confusion_matrix(y_test, pred))
 print(classification_report(y_test, pred))
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-

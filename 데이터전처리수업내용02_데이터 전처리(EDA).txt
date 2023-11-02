@@ -11,6 +11,13 @@
 ** 컬럼이 너무 많을 때 몇몇 컬럼만 뽑아서 쓸 경우 이렇게 한다.
 data = data[['id', 'title', 'genres', 'vote_average', 'popularity', 'keywords', 'overview']]
 
+** sort_values(오른차순으로 확인하기)
+data[data['거래금액(만원)'] > 1.265000e+05].sort_values(by='거래금액(만원)', ascending=False)
+
+** #인덱스 정리
+base_rate = base_rate.reset_index
+
+---------------------------------------------------------------------------------------------------------------------
 ** 데이터를 html로 저장해서 EDA를 편하게 볼 수 있는 툴!
 
 from ydata_profiling import ProfileReport

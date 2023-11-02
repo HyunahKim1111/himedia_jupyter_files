@@ -110,3 +110,6 @@ data2['Name'].str.len().idxmax()
 
 data2['Name'].str.len().max()
 
+
+12. 람다함수 사용법
+data['target'] = data['rating'].apply(lambda x: 1 if x >=8 else 0)

@@ -1,0 +1,34 @@
+딥러닝2 early stopping / ModelCheckpoint 등 
+
+# 학습중 loss가 거의 변하지 않을 때 모델 저장
+from tensorflow.keras.callbacks import ModelCheckpoint
+
+modelpath = "./model/{epoch:02d}-{val_accuracy:.4f}.hdf5"
+checkpointer = ModelCheckpoint(filepath=modelpath, verbose=1)
+
+history = model.fit(X_train, y_train, epochs=50, batch_size=500, validation_split=0.25, verbose=0,
+                   callbacks=[checkpointer])
+score = model.evaluate(X_test, y_test)
+print('loss: ', score[0])
+print('accuracy: ', score[1])
+
+------------------------------------------------------------------------------------------------------------------------------
+
+# 학습 자동 중단
+from tensorflow.keras.callbacks import EarlyStopping
+
+early_stopping_callback = EarlyStopping(monitor='val_loss', patience=20)
+
+modelpath = "./model/{epoch:02d}-{val_accuracy:.4f}.hdf5"
+checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=0, save_best_only=True)
+
+history = model.fit(X_train, y_train, epochs=2000, batch_size=500, validation_split=0.25, verbose=0,
+                   callbacks=[early_stopping_callback, checkpointer])
+
+score = model.evaluate(X_test, y_test)
+print('loss: ', score[0])
+print('accuracy: ', score[1])
+
+--> epochs=2000 하기는 했지만 
+monitor='val_loss'가 patience=20 20번동안 변하지 않는 지점을 찾은거야. 
+20번을 넘어서도 loss변화가 없으면 끝냄. early stopping 옵션때문에.

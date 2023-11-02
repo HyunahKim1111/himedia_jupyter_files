@@ -1,0 +1,83 @@
+딥러닝08_딥러닝으로_텍스트_분석하기 정리노트
+
+# 토크나이저 사용법
+
+docs = 분석 할 데이터를 담기.
+
+# 문장 토큰화 하기
+token =Tokenizer(lower=False)
+token.fit_on_texts(docs)
+
+# 단어를 벡터로 변환
+x = token.texts_to_sequences(docs)
+
+# 인덱스에 1을 추가해서 원-핫 인코딩 배열 만들기, 
+word_size = len(token.word_index) + 1 
+--> 문장의 단어들 index에서 +1을 해줘야지 배열을 정상적으로 카테고리화할 수 있어.
+** 1개만 넣을 때는 categorical로 카테고리화를 하고, 데이터 전체를 넣을 때는 Embedding으로 차원축소를 시키는 것임!
+ 
+x = to_categorical(x, num_classes=word_size) 
+# 배열이 정상적으로 들어가려면 +1을 해줘야 한다. 그래서 앞을 0으로 만들어줘야 해
+(x.shape을 찍어보면 차원을 확인할 수 있어)
+-->(데이터 전체를 넣을 때는 생략)
+
+-----------------------------------------------------------------------------------------------------------------------
+
+2. 텍스트를 읽고 긍정, 부정 예측하기
+
+docs = ["너무 재미있네요",
+       "한 번 더 보고싶네요",
+       "최고에요",
+       "참 잘 만든 영화이네요.",
+       "추천하고싶은 영화입니다.",
+        "조금 아쉬워요",
+       "이건 별로에요",
+       "그냥 그래요",
+       "생각보다 지루해요",
+       "최악이에요",
+       "내 시간이 아까운 영화"]
+
+#긍정 리뷰는 1, 부정리뷰는 0으로 클래스 지정(정답지)
+classes = array([1,1,1,1,1,0,0,0,0,0])
+
+# 토큰화(단어를 나눠)
+token = Tokenizer(lower=False)
+token.fit_on_texts(docs)
+print(token.word_index)
+
+#단어에 숫자를 부여
+x = token.texts_to_sequences(docs)
+
+word_size = len(token.word_index) + 1 
+
+#원핫인코딩(to_categorical)
+x = to_categorical(x, num_classes=word_size)
+
+# 데이터에서 가장 긴 길이 max값 찾기
+[쌤방법]
+x2 = pd.Series(x)
+x2_len = x2.apply(len)
+x2_len.max()
+
+[chatGPT방법]
+# chatGPT에 물어본 가장 긴 리스트 길이 찾는 법.
+max_len = max (len(i) for i in x)
+print("가장 긴 하위 리스트의 길이: ", max_len)
+
+# 패딩 추가, pad_sequences(데이터, 가장 긴 문장의 길이)
+padded_x = pad_sequences(x, 4)
+print("패딩 결과", padded_x)
+
+# 임베딩에 입력된 단어의 수 지정
+word_size = len(token.word_index) + 1
+
+# 단어 임베딩을 포함해서 딥러닝 모델 생성
+model = Sequential()
+model.add(Embedding(word_size, 8, input_length=4))
+model.add(Flatten())
+model.add(Dense(1, activation='sigmoid'))
+model.summary()
+
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+history = model.fit(padded_x, classes, epochs=20)
+print('Accuracy: ',model.evaluate(padded_x, classes)[1])
