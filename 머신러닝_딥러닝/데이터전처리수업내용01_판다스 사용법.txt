@@ -14,7 +14,7 @@ data[data['범죄율'] < 0.05]
 
 2. 원하는 문자열을 포함한 데이터를 찾고 싶을 때
 # .str.contains("찾을 문자열")
-data2[data2['Name'].str.contains("Miss")]  
+data2[data2['Name'].str.contains("Joseph")]  = Joseph
 
 3. iloc & loc
 
@@ -75,6 +75,8 @@ def c_ratio(x):
 #groupby를 통해서 독립변수와 종속변수의 관계 파악
 data.groupby(['Pclass'])['Survived'].value_counts(sort=False)
 => Pclass별로 Survived한 사람들의 관계를 파악해보자
+
+data.groupby('age')['class'].value_counts(sort=False)
 
 *plot 그래프로도 볼 수 있어!
 data.groupby(['Pclass'])['Survived'].value_counts(sort=False).plot(kind='bar')

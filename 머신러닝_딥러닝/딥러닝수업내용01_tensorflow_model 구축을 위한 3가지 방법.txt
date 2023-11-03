@@ -22,7 +22,8 @@ optimizer='adam' 오차를 어떻게 줄일거냐? 대부분 adam을 쓴다.
 <import 목록들>
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint(## 학습중 loss가 거의 변하지 않을 때 모델 저장,  학습자동중단)
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+(## 학습중 loss가 거의 변하지 않을 때 모델 저장,  학습자동중단)
 
 
 

@@ -1,0 +1,114 @@
+1. ExtraTreesClassifier
+# ExtraTreesClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+etc = ExtraTreesClassifier(n_estimators= 1000, n_jobs=-1, random_state=10)
+etc.fit(X_train, y_train)
+pred_etc = etc.predict(X_test)
+print(accuracy_score(y_test, pred_etc))
+print(classification_report(y_test, pred_etc))
+
+최적 하이퍼 파라미터:  {'n_estimators': 1000}
+최고 예측 정확도: 0.7663
+
+최적 하이퍼 파라미터:  {'n_estimators': 500}
+최고 예측 정확도: 0.7809
+-----------------------------------------------------------------------------------------------------------
+
+2. RandomForestClassifier
+# RandomForest
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier(n_estimators= 1000, n_jobs=-1, random_state=10)
+rfc.fit(X_train, y_train)
+pred_rfc = rfc.predict(X_test)
+print(accuracy_score(y_test, pred_rfc))
+print(classification_report(y_test, pred_rfc))
+
+최적 하이퍼 파라미터:  {'n_estimators': 100}
+최고 예측 정확도: 0.7567
+
+최적 하이퍼 파라미터:  {'n_estimators': 500}
+최고 예측 정확도: 0.7838
+
+--------------------------------------------------------------------------------------------------------------
+
+3. XGBClassifier
+# XGBoost
+from xgboost import XGBClassifier
+xgb = XGBClassifier(n_estimators= 1000, n_jobs=-1, learning_rate=0.01, random_state=10)
+xgb.fit(X_train, y_train)
+pred_xgb = xgb.predict(X_test)
+print(accuracy_score(y_test, pred_xgb))
+print(classification_report(y_test, pred_xgb))
+
+최적 하이퍼 파라미터:  {'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 1000}
+최고 예측 정확도: 0.8030
+
+최적 하이퍼 파라미터:  {'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 100}
+최고 예측 정확도: 0.8047
+
+------------------------------------------------------------------------------------------------
+
+3.LGBMClassifier
+# LightGBM
+from lightgbm import LGBMClassifier
+lgbm = LGBMClassifier(n_estimators= 1000, n_jobs=-1, learning_rate=0.01, random_state=10)
+lgbm.fit(X_train, y_train)
+pred_lgbm = lgbm.predict(X_test)
+print(accuracy_score(y_test, pred_lgbm))
+print(classification_report(y_test, pred_lgbm))
+
+최적 하이퍼 파라미터:  {'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 500}
+최고 예측 정확도: 0.7953
+
+최적 하이퍼 파라미터:  {'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 1000}
+최고 예측 정확도: 0.8104
+-------------------------------------------------------------------------------------------------------
+
+5. BaggingClassifier
+# 배깅
+from sklearn.ensemble import BaggingClassifier
+from sklearn.metrics import accuracy_score, classification_report
+bcf = BaggingClassifier(n_estimators=1000, n_jobs=-1, random_state = 10)
+bcf.fit(X_train, y_train)
+pred_bcf = bcf.predict(X_test)
+print(accuracy_score(y_test, pred_bcf))
+print(classification_report(y_test, pred_bcf))
+
+6. DecisionTreeClassifier
+#의사결정나무
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report
+model = DecisionTreeClassifier(max_depth = 5, random_state=10)
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+print(accuracy_score(y_test, pred))
+print(classification_report(y_test, pred))
+
+7. AdaBoostClassifier
+# 에이다 부스팅 ADABoosting
+from sklearn.ensemble import AdaBoostClassifier
+ada = AdaBoostClassifier(n_estimators = 1000, random_state=10) #멀티코어 n-jobs사용불가
+ada.fit(X_train, y_train)
+pred_ada = ada.predict(X_test)
+print(accuracy_score(y_test, pred_ada))
+print(classification_report(y_test, pred_ada))
+
+8. LogisticRegression
+# 로지스틱 회귀분석
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+lr = LogisticRegression()
+lr.fit(X_train, y_train)
+pred = lr.predict(X_test)
+print(accuracy_score(y_test, pred))
+print(confusion_matrix(y_test, pred))
+print(classification_report(y_test, pred))
+
+9.GradientBoostingClassifier
+# 그래디언트부스팅 GradientTreeBoosting
+from sklearn.ensemble import GradientBoostingClassifier
+gbc = GradientBoostingClassifier(n_estimators=1000, random_state=10)
+gbc.fit(X_train, y_train)
+pred_gbc = gbc.predict(X_test)
+print(accuracy_score(y_test, pred_gbc))
+print(classification_report(y_test, pred_gbc))

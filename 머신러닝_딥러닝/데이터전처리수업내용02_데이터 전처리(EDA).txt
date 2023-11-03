@@ -268,33 +268,22 @@ print(sorted(rand_cv.cv_results_.keys()))
 print('최적 하이퍼 파라미터: ', rand_cv.best_params_)
 print(f'최고 예측 정확도: {rand_cv.best_score_ :.4f}')
 
-17. 데이터증폭 
+17. 데이터증폭 (머신러닝15 참고)
 
-from imblearn.over_sampling import SMOTE
-sm = SMOTE(random_state=42)
-X_res, y_res = sm.fit_resample(X_train, y_train)
+from imblearn.over_sampling import SVMSMOTE, ADASYN, SMOTE
+svm = SVMSMOTE(random_state=7, n_jobs=-1)
+ada = ADASYN(n_neighbors=2, random_state=7, n_jobs=-1)
+smt = SMOTE(k_neighbors=2, random_state=7, n_jobs=-1)
 
-X_train_smt, X_test_smt, y_train_smt, y_test_smt = train_test_split(X_res, y_res, test_size=0.4, random_state=10)
+# svm 
+svm_X, svm_y = svm.fit_resample(X_train, y_train)
 
-#SMOTE 후에 하이퍼 파라미터 구하기
-rand_cv = RandomizedSearchCV(xgb_mx, param_distributions=params, n_iter=27, cv=5, n_jobs=-1, verbose=3)
-rand_cv.fit(X_train_smt, y_train_smt)
-pred = rand_cv.predict(X_test_smt)
-print(sorted(rand_cv.cv_results_.keys()))
-print('최적 하이퍼 파라미터: ', rand_cv.best_params_)
-print(f'최고 예측 정확도: {rand_cv.best_score_ :.4f}')
+# ada
+ada_X, ada_y = ada.fit_resample(X_train, y_train)
 
-#다시 모델에 돌려보기
-xgb_mx = XGBClassifier(max_depth = 10, n_estimators= 500, n_jobs=-1, learning_rate=0.1, random_state=10)
-xgb_mx.fit(X_train_smt, y_train_smt)
-pred_xgb_mx_smt = xgb_mx.predict(X_test_smt)
-print(accuracy_score(y_test_smt, pred_xgb_mx_smt))
-print(classification_report(y_test_smt, pred_xgb_mx_smt))
+#smt
+smt_X, smt_y = smt.fit_resample(X_train, y_train)
 
-# SMOTE한거랑 안한거랑 비교해보기
-pred_xgb_mx_smt_test = xgb_mx.predict(X_test)
-print(accuracy_score(y_test, pred_xgb_mx_smt_test))
-print(classification_report(y_test, pred_xgb_mx_smt_test))
 
 18. 데이터 축소
 
